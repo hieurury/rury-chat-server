@@ -1,18 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { log } from 'console';
-import serverMethods from './tutorials';
+
+//mongoose
+import { getConnectionToken } from '@nestjs/mongoose';
+import { getConnectionStatus } from './utils/db';
+import { Connection } from 'mongoose';
+import { printBanner } from './utils/logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   await app.listen(process.env.PORT ?? 3000);
-  log(`
-    ----------------------------------------------------
-    >>> Server is running at http://localhost:${process.env.PORT ?? 3000}
-    >>> Or running at https://chatserver.hieurury.id.vn
-    ----------------------------------------------------
-    - Ping Server: ${serverMethods.pingServer}
-    - Ping User: ${serverMethods.pingUser}
-  `)
+
+  // lấy mã kết nối MongoDB và trạng thái kết nối
+  const connection = app.get<Connection>(getConnectionToken());
+
+  //banner log
+  printBanner(Number(process.env.PORT ?? 3000), getConnectionStatus(connection));
 }
 bootstrap();

@@ -3,9 +3,16 @@ import { AppController } from './controllers/app.controller';
 import { AppService } from './services/app.service';
 import { UserController } from './controllers/user.controller';
 import { UserService } from './services/user.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import {mongoDbConfig} from './utils/db';
+
 
 @Module({
-  imports: [],
+  imports: [
+    MongooseModule.forRootAsync({
+      useFactory: mongoDbConfig,
+    }),
+  ],
   controllers: [AppController, UserController],
   providers: [AppService, UserService],
 })
