@@ -34,7 +34,6 @@ export const printBanner = (port: number, mongoStatus: string) => {
     ${arrowDim}  MongoDB:  ${mongo}
     ${divider}
         ${tagMethod}  Tutorials:
-        ${arrowDim}  Ping server:    ${color(c.green + c.bold, tutorials.pingServer)}
-        ${arrowDim}  Ping user:  ${color(c.green + c.bold, tutorials.pingUser)}
+        ${Object.keys(tutorials).map(key => `\n        ${arrowDim}  ${key}:  ${color(c.green + c.bold, tutorials[key as keyof typeof tutorials])}`).join('')}
   `);
 };
