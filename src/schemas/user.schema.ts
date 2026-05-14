@@ -9,6 +9,12 @@ export class User {
     @Prop({ required: true })
     email!: string;
 
+    @Prop({ default: false })
+    EmailVerified!: boolean;
+
+    @Prop()
+    EmailVerifiedAt?: Date;
+
     @Prop({ required: true })
     password!: string;
 

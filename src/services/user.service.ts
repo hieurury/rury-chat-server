@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
+import { ApiResponse, UserData } from 'src/types/response';
 
 @Injectable()
 export class UserService {
@@ -25,7 +26,7 @@ export class UserService {
         };
     }
 
-    async createUser(userData: { username: string, email: string, password: string }): Promise<object> {
+    async createUser(userData: { username: string, email: string, password: string }): Promise<ApiResponse<UserData>> {
         // Implementation for creating a user
         if (!userData.username || !userData.email || !userData.password) {
             return {
@@ -45,11 +46,37 @@ export class UserService {
         return {
             status: 'success',
             message: 'user created successfully',
-            data: userCreated
+            data: {
+                _id: userCreated._id,
+                username: userCreated.username,
+                email: userCreated.email,
+                emailVerified: userCreated.EmailVerified,
+                friends: userCreated.friends
+            }
         };
     }
 
-    async deleteUserById(userId: string): Promise<object> {
+    async activeUser(userId: string): Promise<ApiResponse> {
+        if(!userId) {
+            return {
+                status: 'error',
+                message: 'missing user id'
+            };
+        }
+        const userActivated = await this.userModel.findByIdAndUpdate(userId, { EmailVerified: true, EmailVerifiedAt: new Date() }, { new: true });
+        if(!userActivated) {
+            return {
+                status: 'error',
+                message: 'user not found'
+            };
+        }
+        return {
+            status: 'success',
+            message: 'user activated successfully'
+        };
+    }
+
+    async deleteUserById(userId: string): Promise<ApiResponse> {
         if(!userId) {
             return {
                 status: 'error',
