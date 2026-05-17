@@ -4,7 +4,6 @@ import { Model } from 'mongoose';
 import { Verification, VerificationDocument, VerificationPurpose } from 'src/schemas/verification.schema';
 import { createHmac, timingSafeEqual, randomInt } from "crypto";
 import * as dotenv from 'dotenv';
-import { User } from 'src/schemas/user.schema';
 import { EmailService } from './email.service';
 
 dotenv.config();
@@ -57,6 +56,10 @@ export class VerificationService {
     async createNewVerification(userId: string, email: string, purpose: VerificationPurpose = VerificationPurpose.EMAIL_VERIFY): Promise<VerificationDocument> {
 
         try {
+            // TẠO OTP MỚI
+            //đánh dấu tất cả OTP cũ của user này là đã dùng (nếu có)
+            await this.verifyModel.updateMany({ userId, purpose, used: false }, { used: true, usedAt: new Date() }).exec();
+            
             const otp = this.createOtp();
             const otpHash = this.createHashOtp(otp);
             const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // OTP expires in 2 minutes
@@ -65,6 +68,7 @@ export class VerificationService {
             return verification;
         } catch (error) {
             console.error('[VerificationService] LỖI TẠO XÁC MINH:', error);
+            // không tạo được otp thì báo lỗi thôi chứ đừng tắt cả hệ thống
             throw new Error('Failed to create verification');
         }
     }

@@ -26,10 +26,15 @@ export class UserController {
     return this.userService.deleteUserById(userId);
   }
 
+  //LOGIN - ĐĂNG NHẬP NGƯỜI DÙNG
+  @Post("login")
+  async login(@Body() body: { username: string, password: string }): Promise<ApiResponse<UserData>> {
+    return this.userService.getUserLogin(body.username, body.password);
+  }
 
   // REGISTER - ĐĂNG KÝ NGƯỜI DÙNG MỚI
-  @Post()
-  async createUser(@Body() userData: { username: string, email: string, password: string }): Promise<ApiResponse> {
+  @Post("register")
+  async register(@Body() userData: { username: string, email: string, password: string }): Promise<ApiResponse> {
     try {
       const newUser = await this.userService.createUser(userData);
       if (newUser.status === 'error' || !newUser.data) {
@@ -66,7 +71,7 @@ export class UserController {
       const isValid = await this.verificationService.verifyOtpByUserId(body.userId, body.otp, body.purpose);
 
       if (!isValid) {
-        return { status: 'error', message: 'Invalid or expired OTP' };
+        return { status: 'error', message: 'OTP hết hạn' };
       }
 
 
@@ -95,6 +100,16 @@ export class UserController {
   @Post("resend-otp")
   async resendOtp(@Body() body: { userId: string; email: string; purpose: VerificationPurpose }): Promise<ApiResponse> {
     try {
+
+      //nếu otp cũ vẫn còn hiệu lực thì không tạo mới mà gửi lại otp cũ
+      const existingVerification = await this.verificationService.verifyOtpByUserId(body.userId, '', body.purpose);
+      if (existingVerification) {
+        return {
+          status: 'success',
+          message: 'Existing OTP is still valid and has been resent',
+        };
+      }
+
       const verification = await this.verificationService.createNewVerification(body.userId, body.email, body.purpose);
       return {
         status: 'success',

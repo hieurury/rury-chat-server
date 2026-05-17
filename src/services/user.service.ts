@@ -26,6 +26,33 @@ export class UserService {
         };
     }
 
+    async getUserLogin(username: string, password: string): Promise<ApiResponse<UserData>> {
+        if (!username || !password) {
+            return {
+                status: 'error',
+                message: 'missing required fields'
+            };
+        }
+        const user = await this.userModel.findOne({ username, password }).exec();
+        if (!user) {
+            return {
+                status: 'error',
+                message: 'Sai tên đăng nhập hoặc mật khẩu'
+            };
+        }
+        return {
+            status: 'success',
+            message: 'user logged in successfully',
+            data: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                emailVerified: user.EmailVerified,
+                friends: user.friends
+            }
+        };
+    }
+
     async createUser(userData: { username: string, email: string, password: string }): Promise<ApiResponse<UserData>> {
         // Implementation for creating a user
         if (!userData.username || !userData.email || !userData.password) {
